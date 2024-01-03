@@ -1,0 +1,207 @@
+import pandas as pd
+
+# --------------------- After normalization ----------------
+
+# --------------------- load the data ---------------
+train_data = pd.read_csv('normalized_train_data.csv')
+original_shape_train = train_data.shape 
+print('original shape of train_data:',train_data.shape)
+
+test_data = pd.read_csv('normalized_test_data.csv')
+original_shape_test = test_data.shape 
+print('original shape of test_data:',test_data.shape)
+
+
+# --------------------- Visualize first rows of the data
+print(train_data.head())
+print(test_data.head())
+
+
+# --------------------- Obtain summary info about data
+print(train_data.info())
+print(test_data.info())
+
+
+# -------------- Inspect the data and identify pattern -----------
+# Statistical summary
+summary_stats_train = train_data.describe()
+print(summary_stats_train)
+
+summary_stats_test = test_data.describe()
+print(summary_stats_test)
+
+
+# ------------------------ Data cleaning ---------------------
+
+# Check for null or missing values and handle them
+
+# '.isnull().sum()' method is used to count the missing ...
+# ... values in each column and display the results
+missing_values_train = train_data.isnull().sum()
+
+missing_values_test = test_data.isnull().sum()
+
+# Display the missing values count for each column
+print("Missing values in each column (train data):")
+print(missing_values_train)
+
+print("Missing values in each column (test data):")
+print(missing_values_test)
+
+# get the total count of missing values in the entire DataFrame
+total_missing_train = missing_values_train.sum()
+print(f"Total missing values (train_data): {total_missing_train}")
+
+total_missing_test = missing_values_test.sum()
+print(f"Total missing values (test_data): {total_missing_test}")
+
+# Drop rows with missing values 
+train_data.dropna(axis=0, inplace=True)
+test_data.dropna(axis=0, inplace=True)
+
+# Get the shape of the DataFrame after dropping rows
+new_shape_train = train_data.shape
+new_shape_test = test_data.shape
+
+# Compare the shapes to determine if any rows were dropped
+if new_shape_train[0] < original_shape_train[0]:
+    print(f"{original_shape_train[0] - new_shape_train[0]} rows were dropped.")
+else:
+    print("No rows were dropped.")
+
+
+if new_shape_test[0] < original_shape_test[0]:
+    print(f"{original_shape_test[0] - new_shape_test[0]} rows were dropped.")
+else:
+    print("No rows were dropped.")
+# If you want to drop columns with missing values, use axis=1 ...
+# ... data.dropna(axis=1, inplace=True)
+
+# Display the cleaned dataset
+print("\nCleaned dataset (train_data):")
+print(train_data.head())
+
+print("\nCleaned dataset (test_data):")
+print(test_data.head())
+
+
+# ------------------- Fill missing value with mean -----------------
+train_data.fillna(train_data.mean(), inplace=True)
+test_data.fillna(test_data.mean(), inplace=True)
+
+# Alternatively, fill missing values with median
+##train_data.fillna(train_data.median(), inplace=True)
+
+# Display the dataset after filling missing values
+print("\nDataset (train) after filling missing values:")
+print(train_data.head())
+print("\nDataset (test) after filling missing values:")
+print(test_data.head())
+
+# ------------------- Remove any duplicate rows -------------------
+
+# Use the drop_duplicates() function to remove duplicate rows
+
+# Check the shape before removing duplicates
+print("Shape (train) before removing duplicates:", train_data.shape)
+print("Shape (test) before removing duplicates:", test_data.shape)
+
+# Find duplicated rows
+duplicated_rows_train = train_data[train_data.duplicated(keep=False)]
+duplicated_rows_test = test_data[test_data.duplicated(keep=False)]
+
+# Count the number of duplicated rows
+num_duplicated_rows_train = len(duplicated_rows_train)
+num_duplicated_rows_test = len(duplicated_rows_test)
+
+# Display the duplicated rows and the count
+print("Duplicated Rows Train:")
+print(duplicated_rows_train)
+print("Number of Duplicated Rows Train:", num_duplicated_rows_train)
+
+print("Duplicated Rows Test:")
+print(duplicated_rows_test)
+print("Number of Duplicated Rows Test:", num_duplicated_rows_test)
+
+# Remove duplicate rows
+train_data.drop_duplicates(inplace=True)
+test_data.drop_duplicates(inplace=True)
+
+# If you set inplace=False or omit it (as inplace defaults to False)...
+# ...the drop_duplicates() method will return a new DataFrame...
+# .with duplicate rows removed, leaving the original DataFrame unchanged
+
+# Check the shape after removing duplicates
+print("Shape (train) after removing duplicates:", train_data.shape)
+print("Shape (test) after removing duplicates:", test_data.shape)
+
+# Display the dataset after removing duplicates
+print("\nDataset (train) after removing duplicates:")
+print(train_data.head())
+
+print("\nDataset (test) after removing duplicates:")
+print(test_data.head())
+
+
+# ------------------- Remove any duplicate columns -------------------
+
+# Find duplicated columns
+duplicated_columns_train = train_data.columns[train_data.
+                    columns.duplicated(keep=False)].tolist()
+
+duplicated_columns_test = test_data.columns[train_data.
+                    columns.duplicated(keep=False)].tolist()
+
+# Count the number of duplicated columns
+num_duplicated_columns_train = len(duplicated_columns_train)
+num_duplicated_columns_test = len(duplicated_columns_test)
+
+# Display the list of duplicated columns and the count
+print("Duplicated Columns Train:", duplicated_columns_train)
+print("Number of Duplicated Columns Train:", num_duplicated_columns_train)
+
+print("Duplicated Columns Test:", duplicated_columns_test)
+print("Number of Duplicated Columns Test:", num_duplicated_columns_test)
+
+
+# Identify and remove duplicated columns 
+train_data = train_data.T.drop_duplicates(keep='first').T
+test_data = test_data.T.drop_duplicates(keep='first').T
+
+# We transpose the DataFrame using .T so that we can apply ...
+#... drop_duplicates() on columns (which now become rows)
+
+
+# ------------------- Find non-numeric columns ---------------------
+
+# use the 'dtypes' attribute of the DataFrame to get the... 
+# ... data types of all columns
+non_numeric_columns_train = train_data.select_dtypes(exclude=['number']).columns
+
+if non_numeric_columns_train.empty:
+    print("No non-numeric data found in the DataFrame (train).")
+else:
+    print("Non-numeric columns (train):")#Print the list of non-numeric columns
+    print(non_numeric_columns_train.columns)
+
+
+non_numeric_columns_test = test_data.select_dtypes(exclude=['number']).columns
+
+if non_numeric_columns_test.empty:
+    print("No non-numeric data found in the DataFrame (test).")
+else:
+    print("Non-numeric columns (test):")#Print the list of non-numeric columns
+    print(non_numeric_columns_test.columns)
+
+
+
+
+
+
+
+
+
+
+
+
+
