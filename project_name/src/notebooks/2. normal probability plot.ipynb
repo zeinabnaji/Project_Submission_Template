@@ -1,0 +1,66 @@
+import pandas as pd
+import numpy as np
+import scipy.stats as stats
+import matplotlib.pyplot as plt
+
+# ------------------------ load the dataset ----------------------
+train_data = pd.read_csv('normalized_train_data.csv')
+
+
+# ---------------------- Select all the data ---------------------
+columns = train_data.columns[:22]
+
+
+# ------------------------ Create a figure -----------------------
+fig, axes = plt.subplots(nrows=22, ncols=2, figsize=(16, 120))
+fig.subplots_adjust(hspace=0.3, wspace=0.5)
+
+
+# -------------- Create the normal probability plots -------------
+for i, column in enumerate(columns):
+    # Plot raw data
+    stats.probplot(train_data[column], dist="norm", plot=axes[i, 0])
+    axes[i, 0].set_title(f'{column} (Raw)', fontsize=16)
+    axes[i, 0].set_xlabel('Theoretical Quantiles', fontsize=14)
+    axes[i, 0].set_ylabel('Ordered Values', fontsize=14)
+    axes[i, 0].grid(False)
+
+    # Calculate R-squared value for raw data
+    slope_raw, intercept_raw, r_value_raw, _, _ = stats.linregress(
+        *stats.probplot(train_data[column], dist="norm", fit=False))
+    r_squared_raw = r_value_raw ** 2
+
+    # Display R-squared value for raw data on the plot
+    axes[i, 0].text(0.1, 0.9, f'$R^2 = {r_squared_raw:.4f}$',
+                    transform=axes[i, 0].transAxes, fontsize=14)
+
+    # Outlier detection using z-score method
+    z_scores = np.abs(stats.zscore(train_data[column]))
+    threshold = 3  # Define your threshold for outliers
+    outliers = train_data[column][z_scores > threshold]
+
+    # Cleaning outliers (replacing with median)
+    median = train_data[column].median()
+    train_data.loc[z_scores > threshold, column] = median
+    train_data.to_csv('cleaned_train_data.csv',
+                 index=False)
+
+    # Plot cleaned data
+    stats.probplot(train_data[column], dist="norm", plot=axes[i, 1])
+    axes[i, 1].set_title(f'{column} (Cleaned)', fontsize=16)
+    axes[i, 1].set_xlabel('Theoretical Quantiles', fontsize=14)
+    axes[i, 1].set_ylabel('Ordered Values', fontsize=14)
+    axes[i, 1].grid(False)
+
+    # Calculate R-squared value after cleaning outliers
+    slope_cleaned, intercept_cleaned, r_value_cleaned, _, _ = stats.linregress(
+        *stats.probplot(train_data[column], dist="norm", fit=False))
+    r_squared_cleaned = r_value_cleaned ** 2
+
+    # Display R-squared value for cleaned data on the plot
+    axes[i, 1].text(0.1, 0.9, f'$R^2 = {r_squared_cleaned:.4f}$',
+                    transform=axes[i, 1].transAxes, fontsize=14)
+
+plt.tight_layout()
+plt.savefig('Normal_Probability_Plots_Raw_vs_Cleaned.png', dpi=300, bbox_inches='tight')
+plt.show()
