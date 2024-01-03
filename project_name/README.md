@@ -24,8 +24,6 @@ Below is an example repository structure to help you to navigate through the var
     - `results/`
         - `figures/`
         - `tables/`
-    - `tests/`
-        - `test_script1.py`
         - `...`
     - `.gitignore`
     - `LICENSE`
@@ -37,7 +35,6 @@ Below is an example repository structure to help you to navigate through the var
 - `data/`: Contains all the data used in the project.
 - `docs/`: Contains documentation like reports and presentations.
 - `results/`: Contains the outputs of your analyses.
-- `tests/`: Contains testing scripts.
 - `.gitignore`: Lists files/directories to ignore.
 - `LICENSE`: Contains the license information.
 - `README.md`: This file, containing information about the project.
